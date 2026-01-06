@@ -58,7 +58,7 @@ export default function RunDetail({ runId, onBack }) {
         const snapshot = await getRun(id);
         setRun(snapshot);
       } catch (err) {
-        // Ignore snapshot failure.
+        setStreamWarning("Live connection interrupted. Unable to sync snapshot.");
       }
     };
   };

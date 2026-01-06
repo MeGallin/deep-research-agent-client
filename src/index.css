@@ -287,6 +287,13 @@ body {
   font-size: 0.95rem;
 }
 
+.error-stack {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
 .muted {
   color: #6b6153;
   font-size: 0.9rem;

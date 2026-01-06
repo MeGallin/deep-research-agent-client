@@ -77,7 +77,7 @@ export default function Builder() {
         const snapshot = await getRun(runId);
         setRun((prev) => ({ ...prev, ...snapshot }));
       } catch (error) {
-        // Ignore snapshot errors; user can retry.
+        setStreamWarning("Live connection interrupted. Unable to sync snapshot.");
       }
     };
   };
@@ -98,6 +98,7 @@ export default function Builder() {
       research: [],
       error: null
     });
+    setStreamWarning("");
 
     try {
       const response = await createRun(trimmed);
@@ -113,6 +114,7 @@ export default function Builder() {
         status: "error",
         error: error.message || "Failed to start run."
       }));
+      setStreamWarning("Unable to start the run. Check the API connection.");
     }
   };
 
@@ -201,9 +203,7 @@ export default function Builder() {
               <div className="status-value">{run.status}</div>
             </div>
           </div>
-          {streamWarning ? (
-            <p className="warning-banner">{streamWarning}</p>
-          ) : null}
+          {streamWarning ? <p className="warning-banner">{streamWarning}</p> : null}
           {run.error ? <p className="error-banner">{run.error}</p> : null}
         </Panel>
       </div>

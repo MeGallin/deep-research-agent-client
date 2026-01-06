@@ -36,6 +36,10 @@ export default function RunsList({ onSelectRun }) {
     loadRuns();
   }, [status, limit, offset]);
 
+  const handleRetry = () => {
+    loadRuns();
+  };
+
   const handlePrev = () => {
     setOffset((prev) => Math.max(prev - limit, 0));
   };
@@ -94,7 +98,14 @@ export default function RunsList({ onSelectRun }) {
 
       <Panel title="Runs">
         {loading ? <p className="muted">Loading runs...</p> : null}
-        {error ? <p className="error-banner">{error}</p> : null}
+        {error ? (
+          <div className="error-stack">
+            <p className="error-banner">{error}</p>
+            <Button variant="secondary" onClick={handleRetry}>
+              Retry
+            </Button>
+          </div>
+        ) : null}
         {!loading && !error && items.length === 0 ? (
           <p className="muted">No runs found.</p>
         ) : null}
