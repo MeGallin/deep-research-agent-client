@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { listRuns } from "../api.js";
+import { deleteRun, listRuns } from "../api.js";
 import Button from "../components/Button.jsx";
 import Panel from "../components/Panel.jsx";
 
@@ -14,6 +14,7 @@ export default function RunsList({ onSelectRun }) {
   const [total, setTotal] = useState(0);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [deletingId, setDeletingId] = useState("");
 
   const canPrev = offset > 0;
   const canNext = offset + limit < total;
@@ -46,6 +47,25 @@ export default function RunsList({ onSelectRun }) {
 
   const handleNext = () => {
     setOffset((prev) => prev + limit);
+  };
+
+  const handleDelete = async (runId) => {
+    const confirmDelete = window.confirm(
+      "Delete this run? This action cannot be undone."
+    );
+    if (!confirmDelete) {
+      return;
+    }
+    setDeletingId(runId);
+    setError("");
+    try {
+      await deleteRun(runId);
+      await loadRuns();
+    } catch (err) {
+      setError(err.message || "Failed to delete run.");
+    } finally {
+      setDeletingId("");
+    }
   };
 
   return (
@@ -116,13 +136,21 @@ export default function RunsList({ onSelectRun }) {
               <span>Topic</span>
               <span>Status</span>
               <span>Updated</span>
+              <span></span>
             </div>
             {items.map((run) => (
-              <button
+              <div
                 key={run.id}
                 className="runs-row runs-item"
-                type="button"
+                role="button"
+                tabIndex={0}
                 onClick={() => onSelectRun?.(run.id)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    onSelectRun?.(run.id);
+                  }
+                }}
               >
                 <span className="mono">{run.id.slice(0, 8)}</span>
                 <span>{run.topic}</span>
@@ -130,7 +158,19 @@ export default function RunsList({ onSelectRun }) {
                 <span className="muted">
                   {new Date(run.updatedAt).toLocaleString()}
                 </span>
-              </button>
+                <div>
+                  <Button
+                    variant="danger"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      handleDelete(run.id);
+                    }}
+                    disabled={deletingId === run.id}
+                  >
+                    {deletingId === run.id ? "Deleting..." : "Delete"}
+                  </Button>
+                </div>
+              </div>
             ))}
           </div>
         ) : null}

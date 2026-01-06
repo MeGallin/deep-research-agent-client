@@ -41,3 +41,16 @@ test("listRuns builds query params", async () => {
   assert.ok(capturedUrl.includes("limit=10"));
   assert.ok(capturedUrl.includes("offset=20"));
 });
+
+test("deleteRun issues a DELETE request", async () => {
+  let method = "";
+  global.fetch = async (url, options) => {
+    method = options.method;
+    assert.ok(String(url).includes("/runs/run-9"));
+    return { ok: true, json: async () => ({}) };
+  };
+
+  const { deleteRun } = await import("../src/api.js");
+  await deleteRun("run-9");
+  assert.equal(method, "DELETE");
+});

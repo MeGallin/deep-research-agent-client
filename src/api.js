@@ -55,6 +55,24 @@ export async function listRuns({ status, limit, offset } = {}) {
   return handleResponse(response);
 }
 
+export async function deleteRun(runId) {
+  const response = await fetch(`${getApiBase()}/runs/${runId}`, {
+    method: "DELETE"
+  });
+  if (!response.ok) {
+    let message = "Failed to delete run";
+    try {
+      const data = await response.json();
+      if (data?.error) {
+        message = data.error;
+      }
+    } catch (error) {
+      // ignore JSON errors
+    }
+    throw new Error(message);
+  }
+}
+
 export function createEventSource(runId) {
   return new EventSource(`${getApiBase()}/runs/${runId}/events`);
 }

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { createEventSource, getRun } from "../api.js";
+import { createEventSource, deleteRun, getRun } from "../api.js";
 import Button from "../components/Button.jsx";
 import Panel from "../components/Panel.jsx";
 import StatusBadge from "../components/StatusBadge.jsx";
@@ -9,6 +9,7 @@ export default function RunDetail({ runId, onBack }) {
   const [run, setRun] = useState(null);
   const [error, setError] = useState("");
   const [streamWarning, setStreamWarning] = useState("");
+  const [deleting, setDeleting] = useState(false);
   const eventSourceRef = useRef(null);
 
   const attachStream = (id) => {
@@ -104,9 +105,34 @@ export default function RunDetail({ runId, onBack }) {
   return (
     <div className="run-detail">
       <header className="run-detail-header">
-        <Button variant="secondary" onClick={onBack}>
-          Back to runs
-        </Button>
+        <div className="run-detail-actions">
+          <Button variant="secondary" onClick={onBack}>
+            Back to runs
+          </Button>
+          <Button
+            variant="danger"
+            disabled={deleting}
+            onClick={async () => {
+              const confirmDelete = window.confirm(
+                "Delete this run? This action cannot be undone."
+              );
+              if (!confirmDelete) {
+                return;
+              }
+              setDeleting(true);
+              try {
+                await deleteRun(run.id);
+                onBack?.();
+              } catch (err) {
+                setError(err.message || "Failed to delete run.");
+              } finally {
+                setDeleting(false);
+              }
+            }}
+          >
+            {deleting ? "Deleting..." : "Delete"}
+          </Button>
+        </div>
         <div>
           <p className="eyebrow">Run detail</p>
           <h1>{run.topic}</h1>
