@@ -4,6 +4,7 @@ export function createInitialRunState(overrides = {}) {
     step: "",
     runId: null,
     tone: "neutral",
+    format: "blog",
     draft: "",
     research: [],
     error: null,
@@ -21,6 +22,9 @@ export function applySnapshot(prev, snapshot) {
   }
   if (!snapshot.tone && prev?.tone) {
     next.tone = prev.tone;
+  }
+  if (!snapshot.format && prev?.format) {
+    next.format = prev.format;
   }
   return next;
 }

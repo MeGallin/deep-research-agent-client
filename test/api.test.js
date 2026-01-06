@@ -8,20 +8,21 @@ test.afterEach(() => {
   global.fetch = originalFetch;
 });
 
-test("createRun posts a topic and tone", async () => {
+test("createRun posts a topic, tone, and format", async () => {
   global.fetch = async (url, options) => {
     assert.ok(String(url).includes("/runs"));
     assert.equal(options.method, "POST");
     const payload = JSON.parse(options.body);
     assert.equal(payload.topic, "Test topic");
     assert.equal(payload.tone, "analytical");
+    assert.equal(payload.format, "email");
     return {
       ok: true,
       json: async () => ({ runId: "run-123" })
     };
   };
 
-  const result = await createRun("Test topic", "analytical");
+  const result = await createRun("Test topic", "analytical", "email");
   assert.equal(result.runId, "run-123");
 });
 

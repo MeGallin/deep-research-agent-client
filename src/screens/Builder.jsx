@@ -20,9 +20,17 @@ const toneOptions = [
   { value: "optimistic", label: "Optimistic" }
 ];
 
+const formatOptions = [
+  { value: "blog", label: "Blog post" },
+  { value: "email", label: "Email" },
+  { value: "memo", label: "Memo" },
+  { value: "outline", label: "Outline" }
+];
+
 export default function Builder() {
   const [topic, setTopic] = useState("");
   const [tone, setTone] = useState("neutral");
+  const [format, setFormat] = useState("blog");
   const [validationError, setValidationError] = useState("");
   const [run, setRun] = useState(createInitialRunState);
   const [streamWarning, setStreamWarning] = useState("");
@@ -81,11 +89,18 @@ export default function Builder() {
     }
 
     setValidationError("");
-    setRun(createInitialRunState({ status: "queued", step: "starting", tone }));
+    setRun(
+      createInitialRunState({
+        status: "queued",
+        step: "starting",
+        tone,
+        format
+      })
+    );
     setStreamWarning("");
 
     try {
-      const response = await createRun(trimmed, tone);
+      const response = await createRun(trimmed, tone, format);
       setRun((prev) => ({
         ...prev,
         status: "running",
@@ -105,6 +120,7 @@ export default function Builder() {
   const handleReset = () => {
     setTopic("");
     setTone("neutral");
+    setFormat("blog");
     setValidationError("");
     setRun(createInitialRunState());
     setStreamWarning("");
@@ -178,6 +194,20 @@ export default function Builder() {
               ))}
             </select>
           </label>
+          <label className="field">
+            <span className="field-label">Output format</span>
+            <select
+              className="field-input"
+              value={format}
+              onChange={(event) => setFormat(event.target.value)}
+            >
+              {formatOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </label>
           {validationError ? (
             <p className="field-error">{validationError}</p>
           ) : null}
@@ -204,6 +234,10 @@ export default function Builder() {
             <div>
               <span className="muted">Tone</span>
               <div className="status-value">{run.tone || tone}</div>
+            </div>
+            <div>
+              <span className="muted">Format</span>
+              <div className="status-value">{run.format || format}</div>
             </div>
           </div>
           {streamWarning ? <p className="warning-banner">{streamWarning}</p> : null}
