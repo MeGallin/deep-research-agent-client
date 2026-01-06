@@ -12,8 +12,17 @@ import {
   createInitialRunState
 } from "../state/runState.js";
 
+const toneOptions = [
+  { value: "neutral", label: "Neutral" },
+  { value: "conversational", label: "Conversational" },
+  { value: "analytical", label: "Analytical" },
+  { value: "persuasive", label: "Persuasive" },
+  { value: "optimistic", label: "Optimistic" }
+];
+
 export default function Builder() {
   const [topic, setTopic] = useState("");
+  const [tone, setTone] = useState("neutral");
   const [validationError, setValidationError] = useState("");
   const [run, setRun] = useState(createInitialRunState);
   const [streamWarning, setStreamWarning] = useState("");
@@ -72,11 +81,11 @@ export default function Builder() {
     }
 
     setValidationError("");
-    setRun(createInitialRunState({ status: "queued", step: "starting" }));
+    setRun(createInitialRunState({ status: "queued", step: "starting", tone }));
     setStreamWarning("");
 
     try {
-      const response = await createRun(trimmed);
+      const response = await createRun(trimmed, tone);
       setRun((prev) => ({
         ...prev,
         status: "running",
@@ -95,11 +104,12 @@ export default function Builder() {
 
   const handleReset = () => {
     setTopic("");
+    setTone("neutral");
     setValidationError("");
-      setRun(createInitialRunState());
-      setStreamWarning("");
-      if (eventSourceRef.current) {
-        eventSourceRef.current.close();
+    setRun(createInitialRunState());
+    setStreamWarning("");
+    if (eventSourceRef.current) {
+      eventSourceRef.current.close();
       eventSourceRef.current = null;
     }
   };
@@ -154,6 +164,20 @@ export default function Builder() {
             onChange={(event) => setTopic(event.target.value)}
             placeholder="e.g., The future of autonomous logistics"
           />
+          <label className="field">
+            <span className="field-label">Tone</span>
+            <select
+              className="field-input"
+              value={tone}
+              onChange={(event) => setTone(event.target.value)}
+            >
+              {toneOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </label>
           {validationError ? (
             <p className="field-error">{validationError}</p>
           ) : null}
@@ -176,6 +200,10 @@ export default function Builder() {
             <div>
               <span className="muted">Status</span>
               <div className="status-value">{run.status}</div>
+            </div>
+            <div>
+              <span className="muted">Tone</span>
+              <div className="status-value">{run.tone || tone}</div>
             </div>
           </div>
           {streamWarning ? <p className="warning-banner">{streamWarning}</p> : null}

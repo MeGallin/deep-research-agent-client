@@ -33,4 +33,5 @@ npm test
 ## Notes
 
 - Builder opens SSE at `/api/runs/:runId/events` and listens for `snapshot`, `step`, `status`, and `result`.
+- Builder lets you choose a tone before starting a run; the value is sent as `tone` in the API request.
 - Runs list and Run detail are read-only views; use Builder to create new runs.

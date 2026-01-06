@@ -20,11 +20,15 @@ async function handleResponse(response) {
   return response.json();
 }
 
-export async function createRun(topic) {
+export async function createRun(topic, tone) {
+  const payload = { topic };
+  if (tone) {
+    payload.tone = tone;
+  }
   const response = await fetch(`${getApiBase()}/runs`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ topic })
+    body: JSON.stringify(payload)
   });
   return handleResponse(response);
 }

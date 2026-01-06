@@ -115,6 +115,7 @@ export default function RunDetail({ runId, onBack }) {
             <span className="muted">Run ID: {run.id}</span>
           </div>
           <div className="muted">Step: {run.step || "-"}</div>
+          <div className="muted">Tone: {run.tone || "neutral"}</div>
         </div>
       </header>
 

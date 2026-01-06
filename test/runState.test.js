@@ -13,6 +13,7 @@ test("createInitialRunState seeds defaults", () => {
   assert.equal(state.status, "idle");
   assert.equal(state.step, "");
   assert.equal(state.runId, null);
+  assert.equal(state.tone, "neutral");
   assert.deepEqual(state.research, []);
 });
 

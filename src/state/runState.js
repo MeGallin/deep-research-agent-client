@@ -3,6 +3,7 @@ export function createInitialRunState(overrides = {}) {
     status: "idle",
     step: "",
     runId: null,
+    tone: "neutral",
     draft: "",
     research: [],
     error: null,
@@ -17,6 +18,9 @@ export function applySnapshot(prev, snapshot) {
   const next = { ...prev, ...snapshot };
   if (snapshot.id && !snapshot.runId) {
     next.runId = snapshot.id;
+  }
+  if (!snapshot.tone && prev?.tone) {
+    next.tone = prev.tone;
   }
   return next;
 }
