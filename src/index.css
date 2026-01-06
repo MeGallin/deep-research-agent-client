@@ -374,6 +374,17 @@ body {
   font-weight: 600;
 }
 
+.run-status-block {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.run-tokens {
+  font-size: 0.75rem;
+  color: #6b6153;
+}
+
 .run-queued {
   color: #8d6a1a;
 }

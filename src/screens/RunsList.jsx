@@ -154,7 +154,12 @@ export default function RunsList({ onSelectRun }) {
               >
                 <span className="mono">{run.id.slice(0, 8)}</span>
                 <span>{run.topic}</span>
-                <span className={`run-status run-${run.status}`}>{run.status}</span>
+                <span className="run-status-block">
+                  <span className={`run-status run-${run.status}`}>{run.status}</span>
+                  <span className="run-tokens">
+                    {run.tokensTotal ? `${run.tokensTotal} tokens` : ""}
+                  </span>
+                </span>
                 <span className="muted">
                   {new Date(run.updatedAt).toLocaleString()}
                 </span>

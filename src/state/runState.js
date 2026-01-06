@@ -5,6 +5,7 @@ export function createInitialRunState(overrides = {}) {
     runId: null,
     tone: "neutral",
     format: "blog",
+    tokensTotal: 0,
     draft: "",
     research: [],
     error: null,
@@ -25,6 +26,9 @@ export function applySnapshot(prev, snapshot) {
   }
   if (!snapshot.format && prev?.format) {
     next.format = prev.format;
+  }
+  if (typeof snapshot.tokensTotal === "number") {
+    next.tokensTotal = snapshot.tokensTotal;
   }
   return next;
 }
@@ -50,6 +54,7 @@ export function applyResult(prev, result) {
     status: "complete",
     step: "complete",
     draft: result?.draft || "",
-    research: result?.research || []
+    research: result?.research || [],
+    tokensTotal: typeof result?.tokensTotal === "number" ? result.tokensTotal : prev.tokensTotal
   };
 }

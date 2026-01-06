@@ -145,6 +145,9 @@ export default function RunDetail({ runId, onBack }) {
           <div className="muted">Step: {run.step || "-"}</div>
           <div className="muted">Tone: {run.tone || "neutral"}</div>
           <div className="muted">Format: {run.format || "blog"}</div>
+          <div className="muted">
+            Tokens: {run.tokensTotal ? `${run.tokensTotal} tokens` : "-"}
+          </div>
         </div>
       </header>
 

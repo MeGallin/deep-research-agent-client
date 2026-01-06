@@ -259,6 +259,12 @@ export default function Builder() {
               <span className="muted">Format</span>
               <div className="status-value">{run.format || format}</div>
             </div>
+            <div>
+              <span className="muted">Tokens</span>
+              <div className="status-value">
+                {run.tokensTotal ? `${run.tokensTotal} tokens` : "-"}
+              </div>
+            </div>
           </div>
           {streamWarning ? <p className="warning-banner">{streamWarning}</p> : null}
           {run.error ? <p className="error-banner">{run.error}</p> : null}
