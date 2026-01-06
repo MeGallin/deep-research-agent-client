@@ -3,6 +3,7 @@ import { createEventSource, getRun } from "../api.js";
 import Button from "../components/Button.jsx";
 import Panel from "../components/Panel.jsx";
 import StatusBadge from "../components/StatusBadge.jsx";
+import { applyResult, applySnapshot, applyStatus, applyStep } from "../state/runState.js";
 
 export default function RunDetail({ runId, onBack }) {
   const [run, setRun] = useState(null);
@@ -19,36 +20,22 @@ export default function RunDetail({ runId, onBack }) {
 
     es.addEventListener("snapshot", (event) => {
       const data = JSON.parse(event.data);
-      setRun(data);
+      setRun((prev) => (prev ? applySnapshot(prev, data) : data));
     });
 
     es.addEventListener("step", (event) => {
       const data = JSON.parse(event.data);
-      setRun((prev) => (prev ? { ...prev, step: data.step } : prev));
+      setRun((prev) => (prev ? applyStep(prev, data.step) : prev));
     });
 
     es.addEventListener("status", (event) => {
       const data = JSON.parse(event.data);
-      setRun((prev) =>
-        prev
-          ? { ...prev, status: data.status, error: data.error || null }
-          : prev
-      );
+      setRun((prev) => (prev ? applyStatus(prev, data.status, data.error) : prev));
     });
 
     es.addEventListener("result", (event) => {
       const data = JSON.parse(event.data);
-      setRun((prev) =>
-        prev
-          ? {
-              ...prev,
-              status: "complete",
-              step: "complete",
-              draft: data.draft,
-              research: data.research
-            }
-          : prev
-      );
+      setRun((prev) => (prev ? applyResult(prev, data) : prev));
       es.close();
     });
 
@@ -56,7 +43,7 @@ export default function RunDetail({ runId, onBack }) {
       setStreamWarning("Live connection interrupted. Refresh to continue.");
       try {
         const snapshot = await getRun(id);
-        setRun(snapshot);
+        setRun((prev) => (prev ? applySnapshot(prev, snapshot) : snapshot));
       } catch (err) {
         setStreamWarning("Live connection interrupted. Unable to sync snapshot.");
       }

@@ -4,20 +4,18 @@ import Button from "../components/Button.jsx";
 import Input from "../components/Input.jsx";
 import Panel from "../components/Panel.jsx";
 import StatusBadge from "../components/StatusBadge.jsx";
-
-const initialRunState = {
-  status: "idle",
-  step: "",
-  runId: null,
-  draft: "",
-  research: [],
-  error: null
-};
+import {
+  applyResult,
+  applySnapshot,
+  applyStatus,
+  applyStep,
+  createInitialRunState
+} from "../state/runState.js";
 
 export default function Builder() {
   const [topic, setTopic] = useState("");
   const [validationError, setValidationError] = useState("");
-  const [run, setRun] = useState(initialRunState);
+  const [run, setRun] = useState(createInitialRunState);
   const [streamWarning, setStreamWarning] = useState("");
   const eventSourceRef = useRef(null);
 
@@ -33,38 +31,22 @@ export default function Builder() {
 
     es.addEventListener("snapshot", (event) => {
       const data = JSON.parse(event.data);
-      setRun((prev) => ({
-        ...prev,
-        ...data
-      }));
+      setRun((prev) => applySnapshot(prev, data));
     });
 
     es.addEventListener("step", (event) => {
       const data = JSON.parse(event.data);
-      setRun((prev) => ({
-        ...prev,
-        step: data.step || prev.step
-      }));
+      setRun((prev) => applyStep(prev, data.step));
     });
 
     es.addEventListener("status", (event) => {
       const data = JSON.parse(event.data);
-      setRun((prev) => ({
-        ...prev,
-        status: data.status || prev.status,
-        error: data.error || null
-      }));
+      setRun((prev) => applyStatus(prev, data.status, data.error));
     });
 
     es.addEventListener("result", (event) => {
       const data = JSON.parse(event.data);
-      setRun((prev) => ({
-        ...prev,
-        status: "complete",
-        step: "complete",
-        draft: data.draft || "",
-        research: data.research || []
-      }));
+      setRun((prev) => applyResult(prev, data));
       es.close();
     });
 
@@ -75,7 +57,7 @@ export default function Builder() {
       }
       try {
         const snapshot = await getRun(runId);
-        setRun((prev) => ({ ...prev, ...snapshot }));
+        setRun((prev) => applySnapshot(prev, snapshot));
       } catch (error) {
         setStreamWarning("Live connection interrupted. Unable to sync snapshot.");
       }
@@ -90,14 +72,7 @@ export default function Builder() {
     }
 
     setValidationError("");
-    setRun({
-      status: "queued",
-      step: "starting",
-      runId: null,
-      draft: "",
-      research: [],
-      error: null
-    });
+    setRun(createInitialRunState({ status: "queued", step: "starting" }));
     setStreamWarning("");
 
     try {
@@ -121,10 +96,10 @@ export default function Builder() {
   const handleReset = () => {
     setTopic("");
     setValidationError("");
-    setRun(initialRunState);
-    setStreamWarning("");
-    if (eventSourceRef.current) {
-      eventSourceRef.current.close();
+      setRun(createInitialRunState());
+      setStreamWarning("");
+      if (eventSourceRef.current) {
+        eventSourceRef.current.close();
       eventSourceRef.current = null;
     }
   };

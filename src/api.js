@@ -1,7 +1,7 @@
 const DEFAULT_BASE = "http://localhost:8000/api";
 
 function getApiBase() {
-  return import.meta.env.VITE_API_BASE || DEFAULT_BASE;
+  return import.meta?.env?.VITE_API_BASE || DEFAULT_BASE;
 }
 
 async function handleResponse(response) {
