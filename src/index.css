@@ -24,6 +24,26 @@ body {
   gap: 24px;
 }
 
+.app-nav {
+  display: flex;
+  gap: 16px;
+}
+
+.app-nav a {
+  text-decoration: none;
+  font-weight: 600;
+  padding: 8px 14px;
+  border-radius: 999px;
+  color: #6b6153;
+  border: 1px solid transparent;
+}
+
+.app-nav a.active {
+  color: #1d1d1f;
+  border-color: #d8cfc0;
+  background: #fffdf7;
+}
+
 .builder {
   display: flex;
   flex-direction: column;
