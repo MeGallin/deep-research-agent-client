@@ -127,6 +127,19 @@ export default function Builder() {
     }
   };
 
+  const handleCopy = async () => {
+    if (!run.draft) {
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(run.draft);
+      setStreamWarning("Draft copied to clipboard.");
+      setTimeout(() => setStreamWarning(""), 2000);
+    } catch (error) {
+      setStreamWarning("Copy failed. Please copy manually.");
+    }
+  };
+
   useEffect(() => {
     return () => {
       if (eventSourceRef.current) {
@@ -198,7 +211,14 @@ export default function Builder() {
       <div className="builder-output">
         <Panel title="Draft">
           {run.draft ? (
-            <pre className="draft-text">{run.draft}</pre>
+            <>
+              <div className="draft-toolbar">
+                <Button variant="secondary" onClick={handleCopy}>
+                  Copy draft
+                </Button>
+              </div>
+              <pre className="draft-text">{run.draft}</pre>
+            </>
           ) : (
             <p className="muted">Draft output will appear here.</p>
           )}
@@ -209,7 +229,11 @@ export default function Builder() {
               {run.research.map((item) => (
                 <li key={item.url}>
                   <strong>{item.title}</strong>
-                  <div className="muted">{item.url}</div>
+                  <div className="source-link">
+                    <a href={item.url} target="_blank" rel="noreferrer">
+                      {item.url}
+                    </a>
+                  </div>
                   <p className="source-snippet">{item.snippet}</p>
                 </li>
               ))}

@@ -230,12 +230,28 @@ body {
   margin: 0;
 }
 
+.draft-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 12px;
+}
+
 .sources-list {
   margin: 0;
   padding-left: 18px;
   display: flex;
   flex-direction: column;
   gap: 12px;
+}
+
+.source-link a {
+  color: #2a4b70;
+  text-decoration: none;
+  font-size: 0.9rem;
+}
+
+.source-link a:hover {
+  text-decoration: underline;
 }
 
 .source-snippet {
