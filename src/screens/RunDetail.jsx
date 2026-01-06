@@ -4,12 +4,14 @@ import Button from "../components/Button.jsx";
 import Panel from "../components/Panel.jsx";
 import StatusBadge from "../components/StatusBadge.jsx";
 import { applyResult, applySnapshot, applyStatus, applyStep } from "../state/runState.js";
+import { downloadContent } from "../utils/download.js";
 
 export default function RunDetail({ runId, onBack }) {
   const [run, setRun] = useState(null);
   const [error, setError] = useState("");
   const [streamWarning, setStreamWarning] = useState("");
   const [deleting, setDeleting] = useState(false);
+  const [downloadFormat, setDownloadFormat] = useState("md");
   const eventSourceRef = useRef(null);
 
   const attachStream = (id) => {
@@ -152,7 +154,34 @@ export default function RunDetail({ runId, onBack }) {
       <div className="builder-output">
         <Panel title="Draft">
           {run.draft ? (
-            <pre className="draft-text">{run.draft}</pre>
+            <>
+              <div className="draft-toolbar">
+                <div className="download-controls">
+                  <select
+                    className="field-input download-select"
+                    value={downloadFormat}
+                    onChange={(event) => setDownloadFormat(event.target.value)}
+                  >
+                    <option value="md">Markdown (.md)</option>
+                    <option value="txt">Text (.txt)</option>
+                    <option value="html">HTML (.html)</option>
+                  </select>
+                  <Button
+                    variant="secondary"
+                    onClick={() =>
+                      downloadContent({
+                        content: run.draft,
+                        filenameBase: run.topic,
+                        format: downloadFormat
+                      })
+                    }
+                  >
+                    Download
+                  </Button>
+                </div>
+              </div>
+              <pre className="draft-text">{run.draft}</pre>
+            </>
           ) : (
             <p className="muted">Draft output will appear here.</p>
           )}

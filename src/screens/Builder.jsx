@@ -11,6 +11,7 @@ import {
   applyStep,
   createInitialRunState
 } from "../state/runState.js";
+import { downloadContent } from "../utils/download.js";
 
 const toneOptions = [
   { value: "neutral", label: "Neutral" },
@@ -27,10 +28,17 @@ const formatOptions = [
   { value: "outline", label: "Outline" }
 ];
 
+const downloadOptions = [
+  { value: "md", label: "Markdown (.md)" },
+  { value: "txt", label: "Text (.txt)" },
+  { value: "html", label: "HTML (.html)" }
+];
+
 export default function Builder() {
   const [topic, setTopic] = useState("");
   const [tone, setTone] = useState("neutral");
   const [format, setFormat] = useState("blog");
+  const [downloadFormat, setDownloadFormat] = useState("md");
   const [validationError, setValidationError] = useState("");
   const [run, setRun] = useState(createInitialRunState);
   const [streamWarning, setStreamWarning] = useState("");
@@ -121,6 +129,7 @@ export default function Builder() {
     setTopic("");
     setTone("neutral");
     setFormat("blog");
+    setDownloadFormat("md");
     setValidationError("");
     setRun(createInitialRunState());
     setStreamWarning("");
@@ -141,6 +150,17 @@ export default function Builder() {
     } catch (error) {
       setStreamWarning("Copy failed. Please copy manually.");
     }
+  };
+
+  const handleDownload = () => {
+    if (!run.draft) {
+      return;
+    }
+    downloadContent({
+      content: run.draft,
+      filenameBase: run.topic || topic,
+      format: downloadFormat
+    });
   };
 
   useEffect(() => {
@@ -253,6 +273,22 @@ export default function Builder() {
                 <Button variant="secondary" onClick={handleCopy}>
                   Copy draft
                 </Button>
+                <div className="download-controls">
+                  <select
+                    className="field-input download-select"
+                    value={downloadFormat}
+                    onChange={(event) => setDownloadFormat(event.target.value)}
+                  >
+                    {downloadOptions.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                  <Button variant="secondary" onClick={handleDownload}>
+                    Download
+                  </Button>
+                </div>
               </div>
               <pre className="draft-text">{run.draft}</pre>
             </>

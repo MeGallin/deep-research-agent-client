@@ -393,8 +393,22 @@ body {
 
 .draft-toolbar {
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
   margin-bottom: 12px;
+}
+
+.download-controls {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.download-select {
+  min-width: 150px;
 }
 
 .sources-list {
