@@ -157,7 +157,14 @@ export default function RunsList({ onSelectRun }) {
                 <span className="run-status-block">
                   <span className={`run-status run-${run.status}`}>{run.status}</span>
                   <span className="run-tokens">
-                    {run.tokensTotal ? `${run.tokensTotal} tokens` : ""}
+                    {run.tokensTotalAll
+                      ? `${run.tokensTotalAll} tokens`
+                      : run.tokensTotal
+                      ? `${run.tokensTotal} tokens`
+                      : ""}
+                  </span>
+                  <span className="run-variants">
+                    {run.variantsCount ? `${run.variantsCount} rewrites` : ""}
                   </span>
                 </span>
                 <span className="muted">

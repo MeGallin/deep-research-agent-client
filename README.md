@@ -37,3 +37,4 @@ npm test
 - Builder lets you choose an output format before starting a run; the value is sent as `format`.
 - Runs list and Run detail are read-only views; use Builder to create new runs.
 - Runs can be deleted from the Runs list or Run detail view (confirmation required).
+- Run Detail lets you rewrite the saved draft in a new tone/format; rewrites are stored as variants.

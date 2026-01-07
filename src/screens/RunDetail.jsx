@@ -1,10 +1,32 @@
 import { useEffect, useRef, useState } from "react";
-import { createEventSource, deleteRun, getRun } from "../api.js";
+import {
+  createEventSource,
+  createRewrite,
+  deleteRun,
+  getRewrite,
+  getRun,
+  listRewrites
+} from "../api.js";
 import Button from "../components/Button.jsx";
 import Panel from "../components/Panel.jsx";
 import StatusBadge from "../components/StatusBadge.jsx";
 import { applyResult, applySnapshot, applyStatus, applyStep } from "../state/runState.js";
 import { downloadContent } from "../utils/download.js";
+
+const toneOptions = [
+  { value: "neutral", label: "Neutral" },
+  { value: "conversational", label: "Conversational" },
+  { value: "analytical", label: "Analytical" },
+  { value: "persuasive", label: "Persuasive" },
+  { value: "optimistic", label: "Optimistic" }
+];
+
+const formatOptions = [
+  { value: "blog", label: "Blog post" },
+  { value: "email", label: "Email" },
+  { value: "memo", label: "Memo" },
+  { value: "outline", label: "Outline" }
+];
 
 export default function RunDetail({ runId, onBack }) {
   const [run, setRun] = useState(null);
@@ -12,6 +34,15 @@ export default function RunDetail({ runId, onBack }) {
   const [streamWarning, setStreamWarning] = useState("");
   const [deleting, setDeleting] = useState(false);
   const [downloadFormat, setDownloadFormat] = useState("md");
+  const [variants, setVariants] = useState([]);
+  const [variantsLoading, setVariantsLoading] = useState(false);
+  const [variantsError, setVariantsError] = useState("");
+  const [activeVariant, setActiveVariant] = useState(null);
+  const [activeVariantId, setActiveVariantId] = useState("original");
+  const [variantLoadingId, setVariantLoadingId] = useState("");
+  const [rewriteTone, setRewriteTone] = useState("neutral");
+  const [rewriteFormat, setRewriteFormat] = useState("blog");
+  const [rewriting, setRewriting] = useState(false);
   const eventSourceRef = useRef(null);
 
   const attachStream = (id) => {
@@ -62,6 +93,8 @@ export default function RunDetail({ runId, onBack }) {
           return;
         }
         setRun(snapshot);
+        setRewriteTone(snapshot.tone || "neutral");
+        setRewriteFormat(snapshot.format || "blog");
         if (["queued", "running"].includes(snapshot.status)) {
           attachStream(runId);
         }
@@ -81,6 +114,74 @@ export default function RunDetail({ runId, onBack }) {
       }
     };
   }, [runId]);
+
+  useEffect(() => {
+    let isMounted = true;
+    const loadVariants = async () => {
+      setVariantsLoading(true);
+      setVariantsError("");
+      try {
+        const response = await listRewrites(runId);
+        if (!isMounted) {
+          return;
+        }
+        setVariants(response.items || []);
+      } catch (err) {
+        if (!isMounted) {
+          return;
+        }
+        setVariantsError(err.message || "Failed to load rewrites.");
+      } finally {
+        if (isMounted) {
+          setVariantsLoading(false);
+        }
+      }
+    };
+    loadVariants();
+    return () => {
+      isMounted = false;
+    };
+  }, [runId]);
+
+  const handleSelectVariant = async (variantId) => {
+    if (variantId === "original") {
+      setActiveVariant(null);
+      setActiveVariantId("original");
+      return;
+    }
+    setVariantLoadingId(variantId);
+    setVariantsError("");
+    try {
+      const variant = await getRewrite(runId, variantId);
+      setActiveVariant(variant);
+      setActiveVariantId(variantId);
+    } catch (err) {
+      setVariantsError(err.message || "Failed to load rewrite.");
+    } finally {
+      setVariantLoadingId("");
+    }
+  };
+
+  const handleRewrite = async () => {
+    if (!run?.draft) {
+      return;
+    }
+    setRewriting(true);
+    setVariantsError("");
+    try {
+      const variant = await createRewrite(run.id, {
+        tone: rewriteTone,
+        format: rewriteFormat
+      });
+      setVariants((prev) => [variant, ...prev]);
+      setActiveVariant(variant);
+      setActiveVariantId(variant.id);
+    } catch (err) {
+      setVariantsError(err.message || "Failed to create rewrite.");
+    } finally {
+      setRewriting(false);
+    }
+  };
 
   if (error) {
     return (
@@ -103,6 +204,13 @@ export default function RunDetail({ runId, onBack }) {
       </div>
     );
   }
+
+  const displayedDraft = activeVariant?.draft || run.draft;
+  const displayedTokens =
+    activeVariant?.tokensTotal ?? run.tokensTotal ?? 0;
+  const displayedLabel = activeVariant
+    ? `Rewrite: ${activeVariant.tone} / ${activeVariant.format}`
+    : "Original draft";
 
   return (
     <div className="run-detail">
@@ -154,11 +262,107 @@ export default function RunDetail({ runId, onBack }) {
       {streamWarning ? <p className="warning-banner">{streamWarning}</p> : null}
       {run.error ? <p className="error-banner">{run.error}</p> : null}
 
+      <div className="rewrite-section">
+        <Panel title="Rewrite">
+          <div className="rewrite-grid">
+            <label className="field">
+              <span className="field-label">Tone</span>
+              <select
+                className="field-input"
+                value={rewriteTone}
+                onChange={(event) => setRewriteTone(event.target.value)}
+              >
+                {toneOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="field">
+              <span className="field-label">Format</span>
+              <select
+                className="field-input"
+                value={rewriteFormat}
+                onChange={(event) => setRewriteFormat(event.target.value)}
+              >
+                {formatOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <div className="rewrite-actions">
+              <Button
+                onClick={handleRewrite}
+                disabled={rewriting || !run.draft}
+              >
+                {rewriting ? "Rewriting..." : "Rewrite draft"}
+              </Button>
+              <span className="muted">
+                Uses the existing draft without re-running research.
+              </span>
+            </div>
+          </div>
+        </Panel>
+        <Panel title="Variants">
+          {variantsLoading ? <p className="muted">Loading rewrites...</p> : null}
+          {variantsError ? <p className="error-banner">{variantsError}</p> : null}
+          <div className="variant-list">
+            <button
+              type="button"
+              className={`variant-item ${
+                activeVariantId === "original" ? "is-active" : ""
+              }`}
+              onClick={() => handleSelectVariant("original")}
+            >
+              <div>
+                <strong>Original</strong>
+                <div className="variant-meta">
+                  {run.tone || "neutral"} | {run.format || "blog"} |{" "}
+                  {run.tokensTotal ? `${run.tokensTotal} tokens` : "No tokens"}
+                </div>
+              </div>
+              <span className="muted">
+                {new Date(run.updatedAt).toLocaleString()}
+              </span>
+            </button>
+            {variants.map((variant) => (
+              <button
+                key={variant.id}
+                type="button"
+                className={`variant-item ${
+                  activeVariantId === variant.id ? "is-active" : ""
+                }`}
+                onClick={() => handleSelectVariant(variant.id)}
+                disabled={variantLoadingId === variant.id}
+              >
+                <div>
+                  <strong>
+                    {variant.tone} | {variant.format}
+                  </strong>
+                  <div className="variant-meta">
+                    {variant.tokensTotal
+                      ? `${variant.tokensTotal} tokens`
+                      : "No tokens"}
+                  </div>
+                </div>
+                <span className="muted">
+                  {new Date(variant.createdAt).toLocaleString()}
+                </span>
+              </button>
+            ))}
+          </div>
+        </Panel>
+      </div>
+
       <div className="builder-output">
         <Panel title="Draft">
-          {run.draft ? (
+          {displayedDraft ? (
             <>
               <div className="draft-toolbar">
+                <span className="muted">{displayedLabel}</span>
                 <div className="download-controls">
                   <select
                     className="field-input download-select"
@@ -173,7 +377,7 @@ export default function RunDetail({ runId, onBack }) {
                     variant="secondary"
                     onClick={() =>
                       downloadContent({
-                        content: run.draft,
+                        content: displayedDraft,
                         filenameBase: run.topic,
                         format: downloadFormat
                       })
@@ -183,7 +387,12 @@ export default function RunDetail({ runId, onBack }) {
                   </Button>
                 </div>
               </div>
-              <pre className="draft-text">{run.draft}</pre>
+              <div className="draft-meta">
+                <span className="muted">
+                  Tokens: {displayedTokens ? `${displayedTokens} tokens` : "-"}
+                </span>
+              </div>
+              <pre className="draft-text">{displayedDraft}</pre>
             </>
           ) : (
             <p className="muted">Draft output will appear here.</p>
@@ -212,3 +421,4 @@ export default function RunDetail({ runId, onBack }) {
     </div>
   );
 }
+

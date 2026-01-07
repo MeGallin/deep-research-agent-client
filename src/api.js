@@ -76,6 +76,32 @@ export async function deleteRun(runId) {
   }
 }
 
+export async function listRewrites(runId) {
+  const response = await fetch(`${getApiBase()}/runs/${runId}/rewrites`);
+  return handleResponse(response);
+}
+
+export async function getRewrite(runId, variantId) {
+  const response = await fetch(`${getApiBase()}/runs/${runId}/rewrites/${variantId}`);
+  return handleResponse(response);
+}
+
+export async function createRewrite(runId, { tone, format }) {
+  const payload = {};
+  if (tone) {
+    payload.tone = tone;
+  }
+  if (format) {
+    payload.format = format;
+  }
+  const response = await fetch(`${getApiBase()}/runs/${runId}/rewrites`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  });
+  return handleResponse(response);
+}
+
 export function createEventSource(runId) {
   return new EventSource(`${getApiBase()}/runs/${runId}/events`);
 }
