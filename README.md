@@ -35,6 +35,7 @@ npm test
 - Builder opens SSE at `/api/runs/:runId/events` and listens for `snapshot`, `step`, `status`, and `result`.
 - Builder lets you choose a tone before starting a run; the value is sent as `tone` in the API request.
 - Builder lets you choose an output format before starting a run; the value is sent as `format`.
+- Builder includes optional guidance text to steer the output.
 - Runs list and Run detail are read-only views; use Builder to create new runs.
 - Runs can be deleted from the Runs list or Run detail view (confirmation required).
 - Run Detail lets you rewrite the saved draft in a new tone/format; rewrites are stored as variants.

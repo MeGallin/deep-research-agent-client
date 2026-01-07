@@ -263,6 +263,13 @@ export default function RunDetail({ runId, onBack }) {
       {run.error ? <p className="error-banner">{run.error}</p> : null}
 
       <div className="rewrite-section">
+        <Panel title="Guidance">
+          {run.guidance ? (
+            <p className="guidance-text">{run.guidance}</p>
+          ) : (
+            <p className="muted">No guidance provided for this run.</p>
+          )}
+        </Panel>
         <Panel title="Rewrite">
           <div className="rewrite-grid">
             <label className="field">

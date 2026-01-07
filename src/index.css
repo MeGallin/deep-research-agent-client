@@ -262,6 +262,11 @@ body {
   background: #fff;
 }
 
+.field-textarea {
+  min-height: 110px;
+  resize: vertical;
+}
+
 .field-error {
   color: #9c2f2f;
   margin: 8px 0 0;
@@ -483,6 +488,13 @@ body {
 
 .draft-meta {
   margin-bottom: 10px;
+}
+
+.guidance-text {
+  white-space: pre-wrap;
+  margin: 0;
+  font-family: "Literata", serif;
+  color: #4a4337;
 }
 
 .download-controls {

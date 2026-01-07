@@ -38,6 +38,7 @@ export default function Builder() {
   const [topic, setTopic] = useState("");
   const [tone, setTone] = useState("neutral");
   const [format, setFormat] = useState("blog");
+  const [guidance, setGuidance] = useState("");
   const [downloadFormat, setDownloadFormat] = useState("md");
   const [validationError, setValidationError] = useState("");
   const [run, setRun] = useState(createInitialRunState);
@@ -95,6 +96,10 @@ export default function Builder() {
       setValidationError("Topic must be 3-200 characters.");
       return;
     }
+    if (guidance.trim().length > 1000) {
+      setValidationError("Guidance must be 1000 characters or less.");
+      return;
+    }
 
     setValidationError("");
     setRun(
@@ -102,13 +107,14 @@ export default function Builder() {
         status: "queued",
         step: "starting",
         tone,
-        format
+        format,
+        guidance: guidance.trim()
       })
     );
     setStreamWarning("");
 
     try {
-      const response = await createRun(trimmed, tone, format);
+      const response = await createRun(trimmed, tone, format, guidance.trim());
       setRun((prev) => ({
         ...prev,
         status: "running",
@@ -129,6 +135,7 @@ export default function Builder() {
     setTopic("");
     setTone("neutral");
     setFormat("blog");
+    setGuidance("");
     setDownloadFormat("md");
     setValidationError("");
     setRun(createInitialRunState());
@@ -228,6 +235,16 @@ export default function Builder() {
               ))}
             </select>
           </label>
+          <label className="field">
+            <span className="field-label">Guidance (optional)</span>
+            <textarea
+              className="field-input field-textarea"
+              rows={4}
+              value={guidance}
+              onChange={(event) => setGuidance(event.target.value)}
+              placeholder="Audience, must-include points, constraints, etc."
+            />
+          </label>
           {validationError ? (
             <p className="field-error">{validationError}</p>
           ) : null}
@@ -263,6 +280,12 @@ export default function Builder() {
               <span className="muted">Tokens</span>
               <div className="status-value">
                 {run.tokensTotal ? `${run.tokensTotal} tokens` : "-"}
+              </div>
+            </div>
+            <div>
+              <span className="muted">Guidance</span>
+              <div className="status-value">
+                {run.guidance || guidance ? "Provided" : "None"}
               </div>
             </div>
           </div>

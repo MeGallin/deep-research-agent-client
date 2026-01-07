@@ -5,6 +5,7 @@ export function createInitialRunState(overrides = {}) {
     runId: null,
     tone: "neutral",
     format: "blog",
+    guidance: "",
     tokensTotal: 0,
     draft: "",
     research: [],
@@ -26,6 +27,9 @@ export function applySnapshot(prev, snapshot) {
   }
   if (!snapshot.format && prev?.format) {
     next.format = prev.format;
+  }
+  if (typeof snapshot.guidance === "string") {
+    next.guidance = snapshot.guidance;
   }
   if (typeof snapshot.tokensTotal === "number") {
     next.tokensTotal = snapshot.tokensTotal;

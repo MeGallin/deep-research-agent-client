@@ -15,6 +15,7 @@ test("createInitialRunState seeds defaults", () => {
   assert.equal(state.runId, null);
   assert.equal(state.tone, "neutral");
   assert.equal(state.format, "blog");
+  assert.equal(state.guidance, "");
   assert.equal(state.tokensTotal, 0);
   assert.deepEqual(state.research, []);
 });
